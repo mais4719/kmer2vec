@@ -111,8 +111,8 @@ def region_walker(pysam_ref, chrom, window_size, regions):
     """
     chr_seq = pysam_ref.fetch(chrom)
     for region in regions:
-        region_length = region.end - region.start
-        for pos in range(region.start, region_length - window_size + 1):
+        kmers = (region.end - region.start) - window_size + 1
+        for pos in range(region.start, region.start + kmers):
             yield chr_seq[pos:pos + window_size]
 
 
@@ -148,6 +148,9 @@ def kmer_counter(fasta_file, chrom, window_size, regions):
             except ValueError:
                 # Simply ignore sequences contaning anything else
                 # than A, C, G, T.
+                #with open('debug.txt', 'aw') as f:
+                #    f.write(kmer_seq + '\n')
+
                 pass
     return (window_size, chrom, kmer_count)
 
@@ -186,11 +189,11 @@ def update_final_results(result):
                    'sex chromosomes.',
               required=False)
 @click.option('--filter_str', '-f', multiple=True,
-              default=['decoy', 'chrEBV', 'HLA', 'alt'],
+              default=[],
               help='Filter case sensitive string(s). ' +
                    'For example: "-m decoy -m HLA" will filter all ' +
-                   'parent/chromosom id contaning "decoy" or "HLA" ' +
-                   '(default = "decoy", "chrEBV", "HLA", "alt")',
+                   'parent/chromosom id contaning "decoy" or "HLA". ' +
+                   '(Filter examples "decoy", "chrEBV", "HLA", "alt")',
               required=False)
 @click.option('--bed_file', '-b', type=click.Path(exists=True), multiple=True,
               help='Restrict the region(s) to analys by one, or more, ' +
