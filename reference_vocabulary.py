@@ -98,7 +98,7 @@ def chrom_walker(pysam_ref, chrom, window_size):
 
 
 def region_walker(pysam_ref, chrom, window_size, regions):
-    """ Kmer generator from a chromosome.
+    """ Kmer generator from a chromosome sub-region.
 
     Args:
           pysam_ref (FastaFile): pysam.FastaFile object.
@@ -150,7 +150,6 @@ def kmer_counter(fasta_file, chrom, window_size, regions):
                 # than A, C, G, T.
                 #with open('debug.txt', 'aw') as f:
                 #    f.write(kmer_seq + '\n')
-
                 pass
     return (window_size, chrom, kmer_count)
 
@@ -159,8 +158,9 @@ def update_final_results(result):
     """ Callback function for multiprocessing pool.
 
     Args:
-        result (tuple): 0: String or list of strings
-                        1: numpy array
+        result (tuple): 0: (int) window size
+                        1: String or list of strings
+                        2: numpy array
     """
     global final_result
     window_size, chrom, kmer_count = result
