@@ -253,7 +253,7 @@ def main(fasta_file, output, window_size=6, select=None,
         if bed_file:
             # Create a new Job object with updated regions.
             # Add empty list if no regions in bed-file(s).
-            job = Job(*job[:-1], bed_dict.get(job.chrom, []))
+            job = Job(*job[:-1], regions=bed_dict.get(job.chrom, []))
 
         run = pool.apply_async(kmer_counter,
                                job,
