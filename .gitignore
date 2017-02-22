@@ -1,7 +1,6 @@
 .ipynb_checkpoints/
 __pycache__/
-examples/*.gz
-examples/*.bed
+*.bed
 *.gz
 *.tsv
 *.swp
