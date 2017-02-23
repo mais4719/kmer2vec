@@ -1,6 +1,8 @@
 """
 Utilities Module for DNA Sequence.
 """
+import os
+import gzip
 import numpy as np
 from collections import Counter
 
@@ -81,3 +83,120 @@ def sequence_entropy(sequence):
     return -1 * sum(c * np.log2(c) for b, c in c.items())
 
 
+def isgzip(filename):
+    """ Function checks gzip files magic number
+
+    Args:
+        filename (str): Path to file to test.
+
+    Returns:
+        boolean: True = gzip magic number exist (this is a gzip file).
+    """
+    magic_number = b'\x1f\x8b\x08'
+    with open(filename, 'rb') as f:
+        file_start = f.read(len(magic_number))
+
+    if magic_number == file_start:
+        return True
+    return False
+
+
+def kmer_vector2tsv_file(filename, kmer_vector, length, enable_gzip=False):
+    """ Converting the data structure kmer-vector to a human readable
+    tsv file.
+
+    Args:
+            filename (str): Output tsv filename.
+        kmer_vector (iter): Iterable object where index correspond to kmer
+                            sequence and value equals kmer frequency.
+                            (Use number2patten to convert index into sequence)
+              length (int): Original sequence length of each kmer used to
+                            create the vector. (see patten2number)
+     enable_gzip (boolean): If true gzip compress output file.
+
+    Returns:
+        filename (str): Return full file path if successfull.
+    """
+    try:
+        fh = gzip.open if enable_gzip else open
+        with fh(filename, 'wt') as out:
+            for index, count in enumerate(kmer_vector):
+                seq = number2patten(index, length)
+                out.write('{seq}\t{count}\n'.format(seq=seq,
+                                                    count=count))
+        return filename
+    except Exception:
+        print('Not able to create [%s]\n' % filename)
+        raise
+
+
+def tsv_file2kmer_vector(filename):
+    """ Reads a kmer count tsv file into a numpy array object.
+
+    Args:
+        filename (str): Input kmer count tsv filename.
+
+    Returns:
+        kmer_vector (numpy): Numpy array object where index correspond to kmer
+                             sequence, and value equals kmer frequency.
+    """
+    try:
+        fh = gzip.open if isgzip(filename) else open
+        with fh(filename, 'rt') as f:
+            for i, rec in enumerate(f):
+                seq, count = rec.strip().split()
+
+                if i == 0:
+                    length = len(seq)
+                    kmer_vector = np.array([0] * (4**length),
+                                           dtype=np.uint32)
+
+                assert len(seq) == length
+                kmer_vector[patten2number(seq)] += int(count)
+
+        return kmer_vector, length
+
+    except Exception:
+        print('Not able to read file [%s]\n' % filename)
+        raise
+
+
+def read_faidx(filename, filter_str):
+    """ Parsing fasta index file.
+
+    Args:
+           filename (str): Path to fasta index file or fasta file.
+                           This function tries to guess the correct
+                           path to the fasta index file if fasta file
+                           path is provided.
+        filter_str (list): List of strings to ignore in parent
+                           name.
+    Returns:
+        dict: With parents/chromosome id as key and size (bp) as value.
+    """
+    if not filename.endswith('.fai'):
+        # Try to find fai file.
+        fai_candidates = [filename + '.fai',
+                          filename.rstrip('.fa') + '.fai',
+                          filename.rstrip('.gz') + '.fai']
+        try:
+            faidx_file = [os.path.isfile(c)
+                          for c in fai_candidates].index(True)
+            faidx_file = fai_candidates[faidx_file]
+        except ValueError:
+            raise IOError('Could not find valid faidx for [%s]i\n' % filename)
+    else:
+        faidx_file = filename
+
+    try:
+        chroms = {}
+        with open(faidx_file) as faidx:
+            for record in faidx:
+                col = record.strip().split()
+                name, length = col[0], int(col[1])
+                if not any([ignore in name for ignore in filter_str]):
+                    chroms[name] = length
+        return chroms
+    except Exception:
+        print('Could not read faidx file [%s]' % faidx_file)
+        raise

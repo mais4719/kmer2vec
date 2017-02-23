@@ -14,6 +14,8 @@ from multiprocessing.pool import Pool
 from threading import Lock
 from utils import patten2number
 from utils import number2patten
+from utils import kmer_vector2tsv_file
+from utils import read_faidx
 
 __author__ = 'Magnus Isaksson'
 __credits__ = ['Magnus Isaksson']
@@ -29,31 +31,6 @@ Region = namedtuple('Region', 'start end')
 
 lock = Lock()
 final_result = None
-
-
-def read_fasta_index(faidx_file, filter_str=[]):
-    """ Parsing fasta index file.
-
-    Args:
-         faidx_file (str): Path to fasta index file.
-        filter_str (list): List of strings to ignore in parent
-                           name.
-
-    Returns:
-        dict: With parents/chromosome id as key and size (bp) as value.
-    """
-    try:
-        chroms = {}
-        with open(faidx_file) as faidx_file:
-            for record in faidx_file:
-                col = record.strip().split()
-                name, length = col[0], int(col[1])
-                if not any([ignore in name for ignore in filter_str]):
-                    chroms[name] = length
-        return chroms
-    except FileNotFoundError:
-        print('Could not find faidx file: ' + faidx_file,
-              file=sys.stderr, flush=True)
 
 
 def read_bed_regions(bed_files, chroms):
@@ -221,8 +198,8 @@ def main(fasta_file, output, window_size=6, select=None,
         return
 
     # Load parent/chromosome id from index file.
-    chroms = read_fasta_index(faidx_file,
-                              filter_str=filter_str)
+    chroms = read_faidx(faidx_file,
+                        filter_str=filter_str)
 
     # Subselect list of parent/chromosome id if needed.
     if select:
@@ -266,12 +243,7 @@ def main(fasta_file, output, window_size=6, select=None,
             print(run.get())
 
     # Save results to tsv text file.
-    with open(output, 'w') as out:
-        for int_seq, frequence in enumerate(final_result):
-            seq = number2patten(int_seq, window_size)
-            out.write('{seq}\t{freq}\n'.format(seq=seq,
-                                               freq=frequence))
-
+    kmer_vector2tsv_file(output, final_result, window_size)
     print('\nDone...\n')
 
 
