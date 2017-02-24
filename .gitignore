@@ -4,4 +4,4 @@ __pycache__/
 *.gz
 *.tsv
 *.swp
-
+*.pyc

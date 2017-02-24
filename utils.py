@@ -12,6 +12,26 @@ __version__ = '0.1.0'
 
 BASE_TO_NUMBER = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
 NUMBER_TO_BASE = ('A', 'C', 'G', 'T')
+COMPLEMENTARY_BASE = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A',
+                      'R': 'Y', 'Y': 'R', 'S': 'S', 'W': 'W',
+                      'K': 'M', 'M': 'K', 'B': 'V', 'D': 'H',
+                      'H': 'D', 'V': 'B', 'N': 'N'}
+
+
+def reverse_complement(sequence):
+    """ Creates reverse complement of provided DNA sequence.
+
+    Args:
+        sequence (str): DNA sequence (allowing A, C, G, T uppercase only)
+
+    Returns:
+        str: DNA sequence string.
+    """
+    try:
+        return ''.join([COMPLEMENTARY_BASE[base]
+                        for base in reversed(sequence)])
+    except KeyError:
+        raise ValueError('Not able to reverse complement: %s' % sequence)
 
 
 def patten2number(sequence):
@@ -50,6 +70,52 @@ def number2patten(number, length):
     return number2patten(prefix_index, length - 1) + base
 
 
+def multisize_patten2number(sequence, min_length, max_length):
+    """ Converts kmers with heterogeneous size into intergers.
+
+    Args:
+          sequence (str): DNA sequence (allowing A, C, G, T uppercase only)
+        min_length (int): Mininal kmer sizes.
+        max_length (int): Maximum kmer sizes.
+
+    Returns:
+        int: Interger reprencitation for a four bases sequence.
+    """
+    lengths = np.arange(min_length, max_length + 1)
+    offsets = np.concatenate(([0], 4**lengths))
+
+    try:
+        index = np.where(lengths == len(sequence))[0][0]
+        return patten2number(sequence) + offsets[index]
+    except IndexError:
+        raise ValueError('Provided sequence length (%d nt) ' % len(sequence) +
+                         'not in list of provided lengths %s nt.' % lengths)
+
+
+def number2multisize_patten(number, min_length, max_length):
+    """ Converts kmers with heterogeneous size into intergers.
+
+    Args:
+            number (int): Interger created by multisize_patten2number.
+        min_length (int): Mininal kmer sizes.
+        max_length (int): Maximum kmer sizes.
+
+    Returns:
+        str: DNA sequence string.
+    """
+    lengths = np.arange(min_length, max_length + 2)  # +2 Include last interval
+    offsets = 4**lengths
+
+    try:
+        index = np.where((offsets - number) > 0)[0][0]
+        org_length = lengths[index - 1]
+        number -= np.concatenate(([0], offsets))[index - 1]
+        return number2patten(number, org_length)
+    except IndexError:
+        raise ValueError('Provided number (%d) do not match ' % number +
+                         'list of provided lengths %s nt.' % lengths)
+
+
 def gc(sequence):
     """ Computes GC-ratio for a DNA sequence.
 
@@ -66,7 +132,7 @@ def gc(sequence):
 def sequence_entropy(sequence):
     """ Computes Shannon entropy for provided DNA sequence.
 
-    S = -∑ p_i * log2(p_i)
+    S = -sum( p_i * log2(p_i) )
 
     where p_i is s the probability of character number i
     showing up in sequence.
