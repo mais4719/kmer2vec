@@ -82,7 +82,7 @@ def multisize_patten2number(sequence, min_length, max_length):
         int: Interger reprencitation for a four bases sequence.
     """
     lengths = np.arange(min_length, max_length + 1)
-    offsets = np.concatenate(([0], 4**lengths))
+    offsets = np.concatenate(([0], 4**lengths)).cumsum()
 
     try:
         index = np.where(lengths == len(sequence))[0][0]
@@ -104,12 +104,12 @@ def number2multisize_patten(number, min_length, max_length):
         str: DNA sequence string.
     """
     lengths = np.arange(min_length, max_length + 2)  # +2 Include last interval
-    offsets = 4**lengths
+    offsets = np.cumsum(4**lengths)
 
     try:
         index = np.where((offsets - number) > 0)[0][0]
-        org_length = lengths[index - 1]
-        number -= np.concatenate(([0], offsets))[index - 1]
+        org_length = lengths[index]
+        number -= np.concatenate(([0], offsets))[index]
         return number2patten(number, org_length)
     except IndexError:
         raise ValueError('Provided number (%d) do not match ' % number +
