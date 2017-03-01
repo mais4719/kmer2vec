@@ -243,7 +243,10 @@ def main(fasta_file, output, window_size=6, select=None,
             print(run.get())
 
     # Save results to tsv text file.
-    kmer_vector2tsv_file(output, final_result, window_size)
+    kmer_vector2tsv_file(output,
+                         final_result,
+                         min_length=window_size,
+                         max_length=window_size)
     print('\nDone...\n')
 
 

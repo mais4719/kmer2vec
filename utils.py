@@ -167,7 +167,8 @@ def isgzip(filename):
     return False
 
 
-def kmer_vector2tsv_file(filename, kmer_vector, length, enable_gzip=False):
+def kmer_vector2tsv_file(filename, kmer_vector, min_length, max_length,
+                         enable_gzip=False):
     """ Converting the data structure kmer-vector to a human readable
     tsv file.
 
@@ -176,8 +177,8 @@ def kmer_vector2tsv_file(filename, kmer_vector, length, enable_gzip=False):
         kmer_vector (iter): Iterable object where index correspond to kmer
                             sequence and value equals kmer frequency.
                             (Use number2patten to convert index into sequence)
-              length (int): Original sequence length of each kmer used to
-                            create the vector. (see patten2number)
+          min_length (int): Mininal kmer sizes (see multisize_patten2number).
+          max_length (int): Maximum kmer sizes (see multisize_patten2number).
      enable_gzip (boolean): If true gzip compress output file.
 
     Returns:
@@ -187,7 +188,7 @@ def kmer_vector2tsv_file(filename, kmer_vector, length, enable_gzip=False):
         fh = gzip.open if enable_gzip else open
         with fh(filename, 'wt') as out:
             for index, count in enumerate(kmer_vector):
-                seq = number2patten(index, length)
+                seq = number2multisize_patten(index, min_length, max_length)
                 out.write('{seq}\t{count}\n'.format(seq=seq,
                                                     count=count))
         return filename
@@ -196,16 +197,20 @@ def kmer_vector2tsv_file(filename, kmer_vector, length, enable_gzip=False):
         raise
 
 
-def tsv_file2kmer_vector(filename):
+def tsv_file2kmer_vector(filename, min_length, max_length):
     """ Reads a kmer count tsv file into a numpy array object.
 
     Args:
-        filename (str): Input kmer count tsv filename.
+          filename (str): Input kmer count tsv filename.
+        min_length (int): Mininal kmer sizes.
+        max_length (int): Maximum kmer sizes.
 
     Returns:
         kmer_vector (numpy): Numpy array object where index correspond to kmer
                              sequence, and value equals kmer frequency.
     """
+    kmer_sizes = np.arange(min_length, max_length + 1)
+
     try:
         fh = gzip.open if isgzip(filename) else open
         with fh(filename, 'rt') as f:
@@ -213,14 +218,36 @@ def tsv_file2kmer_vector(filename):
                 seq, count = rec.strip().split()
 
                 if i == 0:
-                    length = len(seq)
-                    kmer_vector = np.array([0] * (4**length),
+                    vocabulary_size = np.sum(4**kmer_sizes)
+                    kmer_vector = np.array([0] * vocabulary_size,
                                            dtype=np.uint32)
 
-                assert len(seq) == length
-                kmer_vector[patten2number(seq)] += int(count)
+                assert len(seq) in kmer_sizes
+                num_seq = multisize_patten2number(seq, min_length, max_length)
+                kmer_vector[num_seq] += int(count)
 
-        return kmer_vector, length
+        return kmer_vector
+
+    except Exception:
+        print('Not able to read file [%s]\n' % filename)
+        raise
+
+
+def max_min_kmer_sizes(filename):
+    """ Reads a kmer count tsv file and finds max and min length.
+
+    Args:
+        filename (str): Input kmer count tsv filename.
+
+    Returns:
+        tuple (int, int): Shortest and longest kmer in nt.
+    """
+    try:
+        fh = gzip.open if isgzip(filename) else open
+        with fh(filename, 'rt') as f:
+            kmer_sizes = np.array([len(rec.split()[0]) for rec in f])
+
+        return kmer_sizes.min(), kmer_sizes.max()
 
     except Exception:
         print('Not able to read file [%s]\n' % filename)
@@ -256,11 +283,12 @@ def read_faidx(filename, filter_str):
 
     try:
         chroms = {}
+        filter_strs = filter_str.strip().split(',')
         with open(faidx_file) as faidx:
             for record in faidx:
                 col = record.strip().split()
                 name, length = col[0], int(col[1])
-                if not any([ignore in name for ignore in filter_str]):
+                if not any([ignore in name for ignore in filter_strs]):
                     chroms[name] = length
         return chroms
     except Exception:
