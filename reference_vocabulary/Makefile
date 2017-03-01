@@ -1,3 +1,5 @@
+URL38:="ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_full_plus_hs38d1_analysis_set.fna.gz"
+
 KMER_SIZE:=6
 REF_GENOME:="/sas/seq5/StaticFiles/genomes/hs38DH/hs38DH.fa"
 
@@ -12,6 +14,8 @@ ifeq ($(OS),Darwin) # Assume Mac OS X
 endif
 
 all: rmsk_LINE_$(KMER_SIZE)-mers.tsv  rmsk_SINE_$(KMER_SIZE)-mers.tsv all_$(KMER_SIZE)-mers.tsv
+
+refgenome: GRCh38_full_hs38d1_decoy.fa.fai GRCh38_full_hs38d1_decoy.fa
 
 rmsk.txt.gz :
 	rsync -avzP rsync://hgdownload.cse.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz .
@@ -31,9 +35,16 @@ rmsk_SINE_$(KMER_SIZE)-mers.tsv : rmsk_SINE.bed ../reference_vocabulary.py
 all_$(KMER_SIZE)-mers.tsv : ../reference_vocabulary.py
 	../reference_vocabulary.py --output all_$(KMER_SIZE)-mers.tsv -f "decoy" -f "chrEBV" -f "HLA" -f "alt" -w $(KMER_SIZE) -p $(NPROCS) $(REF_GENOME)
 
+GRCh38_full_hs38d1_decoy.fa :
+	(wget -O- $(URL38) | gzip -dc) > GRCh38_full_hs38d1_decoy.fa
+
+GRCh38_full_hs38d1_decoy.fa.fai : GRCh38_full_hs38d1_decoy.fa
+	samtools faidx GRCh38_full_hs38d1_decoy.fa
+
 clean:
 	rm rmsk.txt.gz
 	rm rmsk_*.bed
 	rm rmsk_*_$(KMER_SIZE)-mers.tsv
 	rm all_$(KMER_SIZE)-mers.tsv
+	rm GRCh38_full_hs38d1_decoy.*
 

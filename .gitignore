@@ -3,6 +3,8 @@ __pycache__/
 *.bed
 *.gz
 *.tsv
+*.fa
+*.fai
 *.swp
 *.pyc
 *.pickle
