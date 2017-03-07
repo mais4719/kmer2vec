@@ -199,7 +199,7 @@ def main(fasta_file, output, window_size=6, select=None,
 
     # Load parent/chromosome id from index file.
     chroms = read_faidx(faidx_file,
-                        filter_str=filter_str)
+                        filter_strs=filter_str)
 
     # Subselect list of parent/chromosome id if needed.
     if select:

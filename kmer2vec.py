@@ -91,7 +91,8 @@ class Kmer2Vec(object):
         self.valid_kmers = self._get_valid_examples()
 
         self.ALLOWED_CHRS = [chr_name for chr_name in
-                             read_faidx(flags.fa_file, flags.chr_filter)]
+                             read_faidx(flags.fa_file,
+                                        flags.chr_filter.split(','))]
 
         self.NUMBER_OF_CHRS = len(self.ALLOWED_CHRS)
 

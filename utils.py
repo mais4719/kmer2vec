@@ -254,7 +254,7 @@ def max_min_kmer_sizes(filename):
         raise
 
 
-def read_faidx(filename, filter_str):
+def read_faidx(filename, filter_strs):
     """ Parsing fasta index file.
 
     Args:
@@ -262,7 +262,7 @@ def read_faidx(filename, filter_str):
                            This function tries to guess the correct
                            path to the fasta index file if fasta file
                            path is provided.
-        filter_str (list): List of strings to ignore in parent
+       filter_strs (list): List of strings to ignore in parent
                            name.
     Returns:
         dict: With parents/chromosome id as key and size (bp) as value.
@@ -283,7 +283,6 @@ def read_faidx(filename, filter_str):
 
     try:
         chroms = {}
-        filter_strs = filter_str.strip().split(',')
         with open(faidx_file) as faidx:
             for record in faidx:
                 col = record.strip().split()
