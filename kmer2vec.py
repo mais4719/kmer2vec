@@ -18,10 +18,6 @@ from utils import read_faidx
 from utils import reverse_complement, gc, sequence_entropy
 
 
-# REF_GENOME_FA = '/sas/seq5/StaticFiles/genomes/hs38DH/hs38DH.fa'
-# REF_GENOME_FAI = '/sas/seq5/StaticFiles/genomes/hs38DH/hs38DH.fa.fai'
-
-
 # Creating command line options.
 flags = tf.app.flags
 

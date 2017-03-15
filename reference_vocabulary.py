@@ -252,10 +252,5 @@ def main(fasta_file, output, window_size=6, select=None,
 
 if __name__ == '__main__':
 
-    # Test
-    #main(fasta_file='/sas/seq5/StaticFiles/genomes/hs38DH/hs38DH.fa',
-    #     faidx_file='/sas/seq5/StaticFiles/genomes/hs38DH/hs38DH.fa.fai',
-    #     output_tsv='test.tsv',
-    #     processes=5)
     main()
 
