@@ -254,6 +254,28 @@ def max_min_kmer_sizes(filename):
         raise
 
 
+def slice_out_kmer(obj, length, min_length, max_length):
+    """ Slicing a iteratable object based on kmer size, for
+    example a list of kmer embeddings.
+
+    Args:
+         obj (e.g. List): A slicable Python object.
+            length (int): Kmer sequence length to slice out.
+        min_length (int): Mininal kmer sizes.
+        max_length (int): Maximum kmer sizes.
+
+    Returns:
+        Sliced copy of provided object.
+    """
+    lengths = np.arange(min_length, max_length + 1)
+    offsets = np.concatenate(([0], 4**lengths)).cumsum()
+
+    assert min_length <= length <= max_length
+    index = np.where(lengths == length)[0][0]
+
+    return obj[offsets[index]:offsets[index + 1]]
+
+
 def read_faidx(filename, filter_strs):
     """ Parsing fasta index file.
 
