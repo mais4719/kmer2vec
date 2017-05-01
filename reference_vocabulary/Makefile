@@ -26,13 +26,13 @@ rmsk_LINE.bed : rmsk.txt.gz
 rmsk_SINE.bed : rmsk.txt.gz
 	zcat rmsk.txt.gz | awk -v class=SINE 'BEGIN{OFS="\t"}{if($$12==class) {print($$6, $$7, $$8, $$11 ":" $$12 ":" $$13);}}' > rmsk_SINE.bed
 
-rmsk_LINE_$(KMER_SIZE)-mers.tsv : rmsk_LINE.bed ../reference_vocabulary.py $(REF_GENOME)
+rmsk_LINE_$(KMER_SIZE)-mers.tsv : rmsk_LINE.bed ../reference_vocabulary.py $(REF_GENOME) $(REF_GENOME).fai
 	../reference_vocabulary.py --output rmsk_LINE_$(KMER_SIZE)-mers.tsv -f "decoy" -f "chrEBV" -f "HLA" -f "alt" --bed_file rmsk_LINE.bed -w $(KMER_SIZE) -p $(NPROCS) $(REF_GENOME)
 
-rmsk_SINE_$(KMER_SIZE)-mers.tsv : rmsk_SINE.bed ../reference_vocabulary.py $(REF_GENOME)
+rmsk_SINE_$(KMER_SIZE)-mers.tsv : rmsk_SINE.bed ../reference_vocabulary.py $(REF_GENOME) $(REF_GENOME).fai
 	../reference_vocabulary.py --output rmsk_SINE_$(KMER_SIZE)-mers.tsv -f "decoy" -f "chrEBV" -f "HLA" -f "alt" --bed_file rmsk_SINE.bed -w $(KMER_SIZE) -p $(NPROCS) $(REF_GENOME)
 
-all_$(KMER_SIZE)-mers.tsv : ../reference_vocabulary.py $(REF_GENOME)
+all_$(KMER_SIZE)-mers.tsv : ../reference_vocabulary.py $(REF_GENOME) $(REF_GENOME).fai
 	../reference_vocabulary.py --output all_$(KMER_SIZE)-mers.tsv -f "decoy" -f "chrEBV" -f "HLA" -f "alt" -w $(KMER_SIZE) -p $(NPROCS) $(REF_GENOME)
 
 GRCh38_full_hs38d1_decoy.fa :

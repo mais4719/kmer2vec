@@ -284,7 +284,7 @@ class Kmer2Vec(object):
                                                                    feed_dict=feed_dict)
                     self.summary_writer.add_summary(summary, step)
 
-                    info_str = '{} ({}/{} done) Avg. loss epoch: {} batch: {}'
+                    info_str = '{} ({}/{} done) epoch: {} batch: {}'
                     print(info_str.format(chrom,
                                           chroms_done,
                                           self.NUMBER_OF_CHRS,
@@ -380,7 +380,7 @@ def context_generator(fa_file, chroms, min_length=3, max_length=5, padding=1):
                 if len(subseq) < rnd_kmer_sizes.size + rnd_kmer_sizes.max():
                     continue
 
-                # Randomly use both strand for learning.
+                # Randomly use both strand for learning (Data Augmentation).
                 if np.random.randint(2):
                     subseq = reverse_complement(subseq)
 
