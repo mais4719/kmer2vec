@@ -37,10 +37,10 @@ will make the program jump into an ipython shell after execution.
 #### Notebooks
 This is a work in progress. Notebooks are used to explore and find new ideas to improve the process.
 
-###### Vector Cosine vs Nedleman-Wunsch Score
+##### Vector Cosine vs Nedleman-Wunsch Score
 Looks at the correlation between cosine similarity and Nedleman-Wunsch score.
 
-###### visualize_kmer_word2vec
+##### visualize_kmer_word2vec
 Notebook visualize embeddings using t-SNEs and pre-computed SINE and LINE k-mer 
 frequencies (created by make in folder "reference_vocabulary")
 
