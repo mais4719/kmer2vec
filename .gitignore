@@ -7,5 +7,4 @@ __pycache__/
 *.fai
 *.swp
 *.pyc
-*.npy
 *.pickle
