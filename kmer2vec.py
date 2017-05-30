@@ -236,11 +236,9 @@ class Kmer2Vec(object):
         projector.visualize_embeddings(self.summary_writer, config)
 
     def save_vocab(self, filename):
-        """ Evaluate and saves current embeddings to a pickle file. """
+        """ Evaluate and saves current embeddings to numpy file. """
         try:
-            with open(filename, 'wb') as f:
-                pickle.dump(self.normalized_embeddings.eval(),
-                            f, pickle.HIGHEST_PROTOCOL)
+            np.save(filename, self.normalized_embeddings.eval())
         except Exception as e:
             print('Unable to save data to', filename, ':', e)
 
@@ -252,7 +250,7 @@ class Kmer2Vec(object):
 
         output_file_template = ('max{max_size}_min{min_size}_mers'
                                 '_{padding}padding_{emb_size}embedding_'
-                                'epoch{epoch}_batch{index}.pickle')
+                                'epoch{epoch}_batch{index}')
         output_file_template = os.path.join(f.save_path, output_file_template)
 
         for epoch in range(1, f.epochs + 1):
