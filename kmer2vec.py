@@ -142,7 +142,7 @@ class Kmer2Vec(object):
             # Ceating, or load, kmer embeddings.
             if f.embeddings_file:
                 print('Loading embeddings from [%s]' % f.embeddings_file)
-                self.embeddings = tf.Variable(pickle.load(open(f.embeddings_file, 'rb')),
+                self.embeddings = tf.Variable(np.load(f.embeddings_file),
                                               name='embeddings')
             else:
                 self.embeddings = tf.Variable(tf.random_uniform([self.VOCABULARY_SIZE,
