@@ -9,7 +9,6 @@ import math
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
-from six.moves import cPickle as pickle
 from random import shuffle
 from tempfile import mkdtemp
 from utils import multisize_patten2number, number2multisize_patten
@@ -64,7 +63,7 @@ flags.DEFINE_string('log_dir', default_value=None,
                     docstring='Path to validation vocabulary file.')
 
 flags.DEFINE_string('embeddings_file', default_value=None,
-                    docstring='Path to previously pickled embeddings.')
+                    docstring='Path to previously embeddings to load (numpy format).')
 
 FLAGS = flags.FLAGS
 
@@ -145,9 +144,10 @@ class Kmer2Vec(object):
                 self.embeddings = tf.Variable(np.load(f.embeddings_file),
                                               name='embeddings')
             else:
-                self.embeddings = tf.Variable(tf.random_uniform([self.VOCABULARY_SIZE,
-                                                                 f.embedding_size],
-                                              -1.0, 1.0),
+                init_width = 0.5 / f.embedding_size
+                self.embeddings = tf.Variable(tf.random_uniform(
+                                               [self.VOCABULARY_SIZE, f.embedding_size],
+                                              -init_width, init_width),
                                               name='embeddings')
 
             embed = tf.nn.embedding_lookup(self.embeddings, self.train_inputs)
@@ -211,6 +211,7 @@ class Kmer2Vec(object):
 
         embeddings_op = tf.summary.histogram('embeddings',
                                              self.embeddings)
+
         norm_embeddings_op = tf.summary.histogram('norm embeddings',
                                                   self.normalized_embeddings)
 
